@@ -86,13 +86,26 @@ const ReferenceLink: React.FC<ReferenceLinkProps> = ({ cms, input }) => {
   const hasTinaAdmin = cms.flags.get('tina-admin') === false ? false : true
   const tinaPreview = cms.flags.get('tina-preview') || false
 
-  if (!hasTinaAdmin) {
-    return null
-  }
+  // if (!hasTinaAdmin) {
+  //   return null
+  // }
 
   return (
     <GetReference cms={cms} id={input.value}>
-      {(document: Document) => (
+      {() => {
+        return (
+          <button
+            className="text-gray-700 hover:text-blue-500 flex items-center uppercase text-sm mt-2 mb-2 leading-none"
+            onClick={() => {
+              cms.events.dispatch({ type: 'forms:select', value: input.value })
+            }}
+          >
+            <BiEdit className="h-5 w-auto opacity-80 mr-2" />
+            Edit in CMS
+          </button>
+        )
+      }}
+      {/* {(document: Document) => (
         <a
           href={`${
             tinaPreview ? `/${tinaPreview}/index.html#` : '/admin#'
@@ -104,7 +117,7 @@ const ReferenceLink: React.FC<ReferenceLinkProps> = ({ cms, input }) => {
           <BiEdit className="h-5 w-auto opacity-80 mr-2" />
           Edit in CMS
         </a>
-      )}
+      )} */}
     </GetReference>
   )
 }

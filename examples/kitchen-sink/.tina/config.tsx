@@ -233,6 +233,14 @@ export default defineConfig({
             ],
           },
           {
+            type: 'object',
+            name: 'seo',
+            fields: [
+              { type: 'string', name: 'metaTitle' },
+              { type: 'string', name: 'metaDescription' },
+            ],
+          },
+          {
             type: 'rich-text',
             name: 'body',
             isBody: true,

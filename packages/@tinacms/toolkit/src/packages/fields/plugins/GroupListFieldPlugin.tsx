@@ -172,9 +172,13 @@ const Item = ({ tinaForm, field, index, item, label, ...p }: ItemProps) => {
                   cms.alerts.error('Cannot navigate away from an invalid form.')
                   return
                 }
+                cms.events.dispatch({
+                  type: 'forms:fields:select',
+                  value: `${tinaForm.id}#${field.name}.${index}`,
+                })
 
-                setExpanded(true)
-                setFocusedField({ fieldName: `${field.name}.${index}` })
+                // setExpanded(true)
+                // setFocusedField({ fieldName: `${field.name}.${index}` })
               }}
             >
               <GroupLabel>{title}</GroupLabel>

@@ -15,6 +15,7 @@ import * as React from 'react'
 import { FC } from 'react'
 import { Form } from '../forms'
 import { Form as FinalForm } from 'react-final-form'
+import { Transition } from '@headlessui/react'
 
 import { DragDropContext, DropResult } from 'react-beautiful-dnd'
 import { Button } from '../styles'
@@ -26,11 +27,13 @@ import { ResetForm } from './ResetForm'
 import { FormActionMenu } from './FormActions'
 import { getIn, FormApi } from 'final-form'
 import { useCMS } from '../react-core'
+import { PanelHeader } from '../fields'
 
 export interface FormBuilderProps {
   form: Form
   hideFooter?: boolean
   label?: string
+  setActiveFormId?: (value: string) => void
   onPristineChange?: (_pristine: boolean) => unknown
 }
 
@@ -71,8 +74,12 @@ const NoFieldsPlaceholder = () => (
 export const FormBuilder: FC<FormBuilderProps> = ({
   form: tinaForm,
   onPristineChange,
+  setActiveFormId,
   ...rest
 }) => {
+  const cms = useCMS()
+  const [nameParts, setNameParts] = React.useState([])
+  const [activeFields, setActiveFields] = React.useState([])
   const hideFooter = !!rest.hideFooter
   /**
    * > Why is a `key` being set when this isn't an array?
@@ -92,6 +99,32 @@ export const FormBuilder: FC<FormBuilderProps> = ({
   }, [tinaForm])
 
   const finalForm = tinaForm.finalForm
+
+  React.useEffect(() => {
+    setActiveFields(tinaForm.fields)
+  }, [tinaForm.id])
+
+  cms.events.subscribe('forms:select', (event) => {
+    setActiveFormId(event.value)
+  })
+  cms.events.subscribe('forms:fields:select', (event) => {
+    // TODO: if formId is different than the active form, change it.
+    // this will probably only come up with inline active fields
+    const [formId, fieldName] = event.value.split('#')
+    const nameParts = fieldName.split('.')
+    setNameParts(nameParts)
+  })
+  const ref = React.useRef()
+
+  React.useEffect(() => {
+    const values = tinaForm.finalForm.getState().values
+    const fields = getFields2({ fields: tinaForm.fields, values, nameParts })
+    if (!fields) {
+      console.log('no fields found, somethings not right')
+    } else {
+      setActiveFields(fields)
+    }
+  }, [nameParts.join('.')])
 
   const moveArrayItem = React.useCallback(
     (result: DropResult) => {
@@ -155,9 +188,32 @@ export const FormBuilder: FC<FormBuilderProps> = ({
           <>
             <DragDropContext onDragEnd={moveArrayItem}>
               <FormPortalProvider>
+                <ul>
+                  {nameParts.map((part, index) => {
+                    if (!isNaN(Number(part))) {
+                      // don't render the indexes
+                      return null
+                    }
+                    return (
+                      <li key={`${part}-${index}`}>
+                        <PanelHeader
+                          onClick={() => {
+                            setNameParts((nameParts) => {
+                              return nameParts.slice(0, index)
+                            })
+                          }}
+                        >
+                          {part}
+                        </PanelHeader>
+                      </li>
+                    )
+                  })}
+                </ul>
                 <FormWrapper id={tinaForm.id}>
-                  {tinaForm && tinaForm.fields.length ? (
-                    <FieldsBuilder form={tinaForm} fields={tinaForm.fields} />
+                  {tinaForm && activeFields.length ? (
+                    <div className="relative">
+                      <FieldsBuilder form={tinaForm} fields={activeFields} />
+                    </div>
                   ) : (
                     <NoFieldsPlaceholder />
                   )}
@@ -458,3 +514,84 @@ const Emoji = ({ className = '', ...props }) => (
     {...props}
   />
 )
+
+const getFields2 = ({ fields, values, nameParts, prefix = '' }) => {
+  if (nameParts.length === 0) {
+    return fields
+  }
+  const field = fields.find((field) => field.name === nameParts[0])
+  if (!field) {
+    throw new Error(`Unable to find field for ${nameParts.join('.')}`)
+  }
+  if (field?.type === 'reference') {
+    return []
+  }
+  if (field?.type === 'object') {
+    if (field.fields) {
+      if (field.list) {
+        if (nameParts.length === 2) {
+          const fields: any[] = field.fields.map((subField: any) => ({
+            ...subField,
+            name: `${prefix ? `${prefix}.` : ''}${field.name}.${nameParts[1]}.${
+              subField.name
+            }`,
+          }))
+          return fields
+        } else {
+          const value = getIn(values, `${nameParts[0]}.${nameParts[1]}`)
+          return getFields2({
+            fields: field.fields,
+            values: value,
+            nameParts: nameParts.slice(2),
+            prefix: `${field.name}.${nameParts[1]}`,
+          })
+        }
+      } else {
+        if (nameParts.length === 1) {
+          const fields: any[] = field.fields.map((subField: any) => ({
+            ...subField,
+            name: `${prefix ? `${prefix}.` : ''}${field.name}.${subField.name}`,
+          }))
+          return fields
+        } else {
+          const value = getIn(values, `${nameParts[0]}`)
+          return getFields2({
+            fields: field.fields,
+            values: value,
+            nameParts: nameParts.slice(1),
+            prefix: `${field.name}`,
+          })
+        }
+      }
+    } else if (field.templates) {
+      if (field.list) {
+        if (nameParts.length === 2) {
+          const value = getIn(values, nameParts.join('.'))
+          const template = field.templates[value._template]
+          // console.log('gotit', template)
+          const fields: any[] = template.fields.map((subField: any) => ({
+            ...subField,
+            name: `${prefix ? `${prefix}.` : ''}${field.name}.${nameParts[1]}.${
+              subField.name
+            }`,
+          }))
+          return fields
+        } else {
+          const value = getIn(values, `${nameParts[0]}.${nameParts[1]}`)
+          const template = field.templates[value._template]
+          return getFields2({
+            fields: template.fields,
+            values: value,
+            nameParts: nameParts.slice(2),
+            prefix: `${field.name}.${nameParts[1]}`,
+          })
+        }
+      } else {
+        // not supported
+        console.log('templates with out list is not supported')
+      }
+    }
+  } else {
+    return field
+  }
+}
