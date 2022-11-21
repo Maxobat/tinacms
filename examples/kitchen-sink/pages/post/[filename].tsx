@@ -1,6 +1,6 @@
 import { InferGetStaticPropsType } from 'next'
 import { Json, Markdown } from '../../components/json'
-import { useTina } from 'tinacms/dist/react'
+import { getField, useTina } from 'tinacms/dist/react'
 import client from '../../.tina/__generated__/client'
 
 export default function Home(
@@ -10,6 +10,10 @@ export default function Home(
 
   return (
     <>
+      <h1 data-tinafield={getField(data.post, 'title')}>{data.post.title}</h1>
+      <div data-tinafield={getField(data.post.seo, 'metaDescription')}>
+        {data.post.seo?.metaDescription}
+      </div>
       <Markdown content={data.post.body} />
       <Json src={data} />
     </>

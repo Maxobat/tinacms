@@ -29,6 +29,7 @@ export const Preview = (
     iframeRef: React.MutableRefObject<HTMLIFrameElement>
   }
 ) => {
+  const cms = useCMS()
   const [activeQuery, setActiveQuery] = React.useState<PostMessage | null>(null)
 
   React.useEffect(() => {
@@ -39,6 +40,19 @@ export const Preview = (
         }
       })
     }
+  }, [props.iframeRef.current])
+
+  const tinaFields = React.useMemo(() => {
+    if (props.iframeRef.current) {
+      const tinaFieldNodes =
+        props.iframeRef.current.contentWindow?.document.querySelectorAll(
+          '[data-tinafield]'
+        )
+      // const Array.from(tinaFieldNodes))
+      console.log(tinaFieldNodes)
+      return Array.from(tinaFieldNodes)
+    }
+    return []
   }, [props.iframeRef.current])
 
   return (
@@ -55,6 +69,28 @@ export const Preview = (
           <div className="col-span-5 ">
             <div className="h-screen flex flex-col">
               <div className="relative flex-1 bg-gray-300 col-span-2 overflow-scroll flex items-center justify-center">
+                <div className="absolute inset-0 pointer-events-none">
+                  {tinaFields.map((node) => {
+                    const rect = node.getBoundingClientRect()
+                    return (
+                      <div
+                        onClick={() => {
+                          cms.events.dispatch({
+                            type: 'forms:fields:select',
+                            value: node.getAttribute('data-tinafield'),
+                          })
+                        }}
+                        className="absolute border-2 border-red-400 pointer-events-all"
+                        style={{
+                          top: rect.top,
+                          left: rect.left,
+                          width: rect.width,
+                          height: rect.height,
+                        }}
+                      />
+                    )
+                  })}
+                </div>
                 <iframe
                   ref={props.iframeRef}
                   className="h-full w-full bg-white"

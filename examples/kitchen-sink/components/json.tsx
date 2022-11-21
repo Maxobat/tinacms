@@ -2,6 +2,7 @@ import React, { Suspense, useEffect, useState } from 'react'
 import { TinaMarkdown } from 'tinacms/dist/rich-text'
 import { Prism } from 'tinacms/dist/rich-text/prism'
 
+import { Explorer } from './explorer'
 // react-json-view assumes global.document exists
 const ReactJson = React.lazy(() => import('react-json-view'))
 
@@ -14,6 +15,25 @@ export function Json(props: { src: object }) {
   if (!isClient) {
     return null
   }
+
+  return (
+    <div className="px-4">
+      <div className="mx-auto my-8 border rounded-lg p-8 shadow-lg max-w-5xl mx-auto shadow-lg">
+        <div className="h-full overflow-scroll">
+          <Explorer
+            label="Data"
+            value={props.src}
+            // expanded={true}
+            defaultExpanded={{
+              page: true,
+            }}
+
+            // copyable
+          />
+        </div>
+      </div>
+    </div>
+  )
 
   return (
     <Suspense fallback={<div className="">Loading...</div>}>
@@ -30,7 +50,12 @@ export function Json(props: { src: object }) {
             displayArrayKey={false}
             shouldCollapse={(item) => {
               if (
-                ['_sys', '_internalValues', '_internalSys'].includes(item?.name)
+                [
+                  '_sys',
+                  '_internalValues',
+                  '_internalSys',
+                  '__meta__',
+                ].includes(item?.name)
               ) {
                 return true
               }

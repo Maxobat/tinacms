@@ -54,3 +54,13 @@ export function useEditState(): { edit: boolean } {
   }, [])
   return { edit } as any
 }
+
+export const getField = <T extends object>(
+  obj: T,
+  field: keyof Omit<T, '__typename' | '_sys'>
+) => {
+  if (obj?.__meta__) {
+    return `${obj.__meta__?.id}#${obj.__meta__.fields[field]}`
+  }
+  return ''
+}

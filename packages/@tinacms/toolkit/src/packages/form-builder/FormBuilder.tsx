@@ -592,6 +592,15 @@ const getFields2 = ({ fields, values, nameParts, prefix = '' }) => {
       }
     }
   } else {
-    return field
+    // Return the parent list of fields
+    // FIXME: this is just a workaround to stay unblocked but
+    // this should instead traverse upwards to find the nearest
+    // object-like parent and return their fields, it should
+    // also have a way of programmatically focusing the field
+    // in the form that was selected.
+    return fields.map((subField: any) => ({
+      ...subField,
+      name: `${prefix ? `${prefix}.` : ''}${subField.name}`,
+    }))
   }
 }

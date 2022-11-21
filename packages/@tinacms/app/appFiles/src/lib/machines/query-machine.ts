@@ -384,6 +384,98 @@ export const queryMachine =
               missingForm.skipFormRegister
             )
           }
+          const META_KEY = '__meta__'
+          function* traverse(o) {
+            const memory = new Set()
+            function* innerTraversal(o, path = []) {
+              if (memory.has(o)) {
+                // we've seen this object before don't iterate it
+                return
+              }
+              // add the new object to our memory.
+              memory.add(o)
+              for (var i of Object.keys(o)) {
+                const itemPath = path.concat(i)
+                yield [i, o[i], itemPath, o]
+                if (o[i] !== null && typeof o[i] == 'object') {
+                  if (i !== META_KEY) {
+                    //going one step down in the object tree!!
+                    yield* innerTraversal(o[i], itemPath)
+                  }
+                }
+              }
+            }
+            yield* innerTraversal(o)
+          }
+          let currentID = null
+          const nodePaths = []
+          for (var [key, value, path, parent] of traverse(newData.data)) {
+            if (value?._internalSys) {
+              nodePaths.push(path)
+              currentID = value._internalSys.path
+              const fields = {}
+              const parents = nodePaths.filter((nodePath) => {
+                return path.join('.').startsWith(nodePath.join('.'))
+              })
+              const nearestParent = parents.reduce(function (a, b) {
+                return a.length < b.length ? a : b
+              })
+              Object.keys(value).map((key) => {
+                if (
+                  [
+                    '__typename',
+                    '_internalSys',
+                    '_internalValues',
+                    '_sys',
+                  ].includes(key)
+                ) {
+                  return false
+                }
+                fields[key] = [
+                  ...path.slice(nearestParent.length + 1),
+                  key,
+                ].join('.')
+              })
+              value[META_KEY] = {
+                id: currentID,
+                fields,
+              }
+            } else if (
+              typeof value === 'object' &&
+              !Array.isArray(value) &&
+              value !== null
+            ) {
+              if (key !== META_KEY) {
+                const id = currentID
+                const fields = {}
+                Object.keys(value).map((key) => {
+                  if (
+                    [
+                      '__typename',
+                      '_internalSys',
+                      '_internalValues',
+                      '_sys',
+                    ].includes(key)
+                  ) {
+                    return false
+                  }
+                  const parents = nodePaths.filter((nodePath) => {
+                    return path.join('.').startsWith(nodePath.join('.'))
+                  })
+                  const nearestParent = parents.reduce(function (a, b) {
+                    return a.length < b.length ? a : b
+                  })
+                  fields[key] = [...path.slice(nearestParent.length), key].join(
+                    '.'
+                  )
+                })
+                value[META_KEY] = {
+                  id,
+                  fields,
+                }
+              }
+            }
+          }
           return { data: newData.data }
         },
         initializer: async (context, event) => {
