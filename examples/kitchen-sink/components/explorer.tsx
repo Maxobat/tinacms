@@ -241,6 +241,8 @@ type RendererProps = {
   handleEntry: (entry: Entry) => JSX.Element
   label?: string
   value: unknown
+  valueView?: (entry: Entry) => JSX.Element
+  initialExpanded?: boolean
   subEntries: Entry[]
   subEntryPages: Entry[][]
   type: string
@@ -279,11 +281,13 @@ export const DefaultRenderer: Renderer = ({
   handleEntry,
   label,
   value,
+  valueView,
   subEntries = [],
   subEntryPages = [],
   type,
   expanded = false,
   copyable = false,
+  initialExpanded = false,
   toggleExpanded,
   pageSize,
 }) => {
@@ -291,7 +295,19 @@ export const DefaultRenderer: Renderer = ({
 
   return (
     <Entry key={label}>
-      {subEntryPages.length ? (
+      {valueView ? (
+        <div className="flex gap-1">
+          <div>
+            <ExpandButton
+              className="flex items-center gap-2"
+              onClick={() => toggleExpanded()}
+            >
+              <Label>{label}</Label> <Expander expanded={expanded} />{' '}
+            </ExpandButton>
+          </div>
+          <div>{(expanded || initialExpanded) && valueView(value)}</div>
+        </div>
+      ) : subEntryPages.length ? (
         <>
           <ExpandButton
             className="flex items-center gap-2"
@@ -300,7 +316,11 @@ export const DefaultRenderer: Renderer = ({
             <Label>{label}</Label> <Expander expanded={expanded} />{' '}
             <Info>
               {String(type).toLowerCase() === 'iterable' ? '(Iterable) ' : ''}
-              {subEntries.length} {subEntries.length > 1 ? `items` : `item`}
+              {String(type).toLowerCase() === 'array'
+                ? `${subEntries.length} ${
+                    subEntries.length > 1 ? `items` : `item`
+                  }`
+                : ''}
             </Info>
           </ExpandButton>
           {copyable ? <CopyButton value={value} /> : null}

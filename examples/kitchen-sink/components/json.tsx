@@ -2,9 +2,36 @@ import React, { Suspense, useEffect, useState } from 'react'
 import { TinaMarkdown } from 'tinacms/dist/rich-text'
 import { Prism } from 'tinacms/dist/rich-text/prism'
 
-import { Explorer } from './explorer'
-// react-json-view assumes global.document exists
-const ReactJson = React.lazy(() => import('react-json-view'))
+import { DefaultRenderer, Explorer } from './explorer'
+
+const Renderer = (props) => {
+  if (
+    ['__meta__', '_sys', '_internalValues', '_internalSys'].includes(
+      props.label
+    )
+  ) {
+    return (
+      <Explorer {...props} defaultExpanded={false} renderer={DefaultRenderer} />
+    )
+  }
+  if (props.type === 'object') {
+    if (props.value?.type === 'root') {
+      return (
+        <Explorer
+          {...props}
+          defaultExpanded={{ body: true }}
+          valueView={(value) => (
+            <div className="font-sans">
+              <Markdown content={value} />
+            </div>
+          )}
+        />
+      )
+    } else {
+    }
+  }
+  return <Explorer {...props} defaultExpanded={true} />
+}
 
 export function Json(props: { src: object }) {
   const [isClient, setIsClient] = useState(false)
@@ -21,60 +48,22 @@ export function Json(props: { src: object }) {
       <div className="mx-auto my-8 border rounded-lg p-8 shadow-lg max-w-5xl mx-auto shadow-lg">
         <div className="h-full overflow-scroll">
           <Explorer
-            label="Data"
+            label="data"
             value={props.src}
-            // expanded={true}
-            defaultExpanded={{
-              page: true,
+            defaultExpanded={true}
+            handleEntry={(props) => {
+              return <Explorer {...props} renderer={Renderer} />
             }}
-
-            // copyable
           />
         </div>
       </div>
     </div>
   )
-
-  return (
-    <Suspense fallback={<div className="">Loading...</div>}>
-      <div className="px-4">
-        <div className="mx-auto my-8 border rounded-lg p-8 shadow-lg max-w-5xl mx-auto shadow-lg">
-          <ReactJson
-            src={props.src}
-            name={false}
-            enableClipboard={false}
-            iconStyle="square"
-            displayDataTypes={false}
-            quotesOnKeys={false}
-            displayObjectSize={false}
-            displayArrayKey={false}
-            shouldCollapse={(item) => {
-              if (
-                [
-                  '_sys',
-                  '_internalValues',
-                  '_internalSys',
-                  '__meta__',
-                ].includes(item?.name)
-              ) {
-                return true
-              }
-              // Hide rich-text objects by default
-              if (item?.src?.type === 'root') {
-                return true
-              }
-              return false
-            }}
-          />
-        </div>
-      </div>
-    </Suspense>
-  )
 }
 
 export const Markdown = (props) => {
   return (
-    <div className="px-4">
+    <div className={props.wrapper ? 'px-4' : ''}>
       <div
         data-test="rich-text-body"
         className="mx-auto border max-w-5xl rounded-lg p-8 shadow-lg prose"

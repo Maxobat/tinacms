@@ -8,16 +8,7 @@ export default function Home(
 ) {
   const { data } = useTina(props)
 
-  return (
-    <>
-      <h1 data-tinafield={getField(data.post, 'title')}>{data.post.title}</h1>
-      <div data-tinafield={getField(data.post.seo, 'metaDescription')}>
-        {data.post.seo?.metaDescription}
-      </div>
-      <Markdown content={data.post.body} />
-      <Json src={data} />
-    </>
-  )
+  return <Json src={data} />
 }
 
 export const getStaticProps = async ({ params }) => {
