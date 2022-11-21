@@ -20,11 +20,14 @@ const Renderer = (props) => {
         <Explorer
           {...props}
           defaultExpanded={{ body: true }}
-          valueView={(value) => (
-            <div className="font-sans">
-              <Markdown content={value} />
-            </div>
-          )}
+          valueView={(value) => {
+            console.log(value)
+            return (
+              <div className="font-sans">
+                <Markdown content={value} />
+              </div>
+            )
+          }}
         />
       )
     } else {
