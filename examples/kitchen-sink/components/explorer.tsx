@@ -69,55 +69,6 @@ export const ExpandButton = styled('button', {
   padding: 0,
 })
 
-type CopyState = 'NoCopy' | 'SuccessCopy' | 'ErrorCopy'
-
-export const CopyButton = ({ value }: { value: unknown }) => {
-  const [copyState, setCopyState] = React.useState<CopyState>('NoCopy')
-
-  return (
-    <button
-      onClick={
-        copyState === 'NoCopy'
-          ? () => {
-              navigator.clipboard.writeText(JSON.stringify(value)).then(
-                () => {
-                  setCopyState('SuccessCopy')
-                  setTimeout(() => {
-                    setCopyState('NoCopy')
-                  }, 1500)
-                },
-                (err) => {
-                  console.error('Failed to copy: ', err)
-                  setCopyState('ErrorCopy')
-                  setTimeout(() => {
-                    setCopyState('NoCopy')
-                  }, 1500)
-                }
-              )
-            }
-          : undefined
-      }
-      style={{
-        cursor: 'pointer',
-        color: 'inherit',
-        font: 'inherit',
-        outline: 'inherit',
-        background: 'transparent',
-        border: 'none',
-        padding: 0,
-      }}
-    >
-      {copyState === 'NoCopy' ? (
-        <Copier />
-      ) : copyState === 'SuccessCopy' ? (
-        <CopiedCopier />
-      ) : (
-        <ErrorCopier />
-      )}
-    </button>
-  )
-}
-
 export const Value = (props) => <span className={valueColor} {...props} />
 
 export const SubEntries = styled('div', {
@@ -243,6 +194,7 @@ type RendererProps = {
   value: unknown
   parentValue: object
   valueView?: (entry: Entry) => JSX.Element
+  handleView?: (key: string, parentValue: object | string[]) => JSX.Element
   initialExpanded?: boolean
   subEntries: Entry[]
   subEntryPages: Entry[][]
