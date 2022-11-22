@@ -78,9 +78,8 @@ export const FormBuilder: FC<FormBuilderProps> = ({
   ...rest
 }) => {
   const cms = useCMS()
-  const [nameParts, setNameParts] = React.useState([])
-  const [activeFields, setActiveFields] = React.useState([])
   const [activeFieldName, setActiveFieldName] = React.useState(null)
+  const [activeFormShape, setActiveFormShape] = React.useState(tinaForm)
   const hideFooter = !!rest.hideFooter
   /**
    * > Why is a `key` being set when this isn't an array?
@@ -102,36 +101,33 @@ export const FormBuilder: FC<FormBuilderProps> = ({
   const finalForm = tinaForm.finalForm
 
   React.useEffect(() => {
-    setActiveFields(tinaForm.fields)
+    setActiveFormShape(tinaForm)
   }, [tinaForm.id])
 
   cms.events.subscribe('forms:select', (event) => {
     setActiveFormId(event.value)
   })
-  cms.events.subscribe('forms:fields:select', (event) => {
-    // TODO: if formId is different than the active form, change it.
-    // this will probably only come up with inline active fields
-    const [formId, fieldName] = event.value.split('#')
-    setActiveFieldName(fieldName)
-  })
-
-  React.useEffect(() => {
-    if (activeFieldName) {
-      const values = tinaForm.finalForm.getState().values
-      const { fields, nameParts } = getFields2({
-        fields: tinaForm.fields,
-        values,
-        nameParts: activeFieldName.split('.'),
-        parentNameParts: [],
-      })
-      if (!fields) {
-        console.log('no fields found, somethings not right')
-      } else {
-        setActiveFields(fields)
-        setNameParts(nameParts)
-      }
-    }
-  }, [activeFieldName])
+  React.useMemo(
+    () =>
+      cms.events.subscribe('forms:fields:select', (event) => {
+        const [formId, fieldName] = event.value.split('#')
+        if (!fieldName) {
+          return
+        }
+        console.log(event.value)
+        const values = tinaForm.finalForm.getState().values
+        const { formShape } = getFormShape({
+          form: tinaForm,
+          values,
+          namePath: fieldName.split('.'),
+          depth: [],
+        })
+        console.log(formShape)
+        setActiveFormShape(formShape)
+        setActiveFieldName(event.value)
+      }),
+    [cms]
+  )
 
   const moveArrayItem = React.useCallback(
     (result: DropResult) => {
@@ -150,27 +146,15 @@ export const FormBuilder: FC<FormBuilderProps> = ({
    * Prevent navigation away from the window when the form is dirty
    */
   React.useEffect(() => {
-    // const onBeforeUnload = (event) => {
-    //   event.preventDefault()
-    //   event.returnValue = ''
-    // }
-
     const unsubscribe = finalForm.subscribe(
       ({ pristine }) => {
         if (onPristineChange) {
           onPristineChange(pristine)
         }
-
-        // if (!pristine) {
-        //   window.addEventListener('beforeunload', onBeforeUnload)
-        // } else {
-        //   window.removeEventListener('beforeunload', onBeforeUnload)
-        // }
       },
       { pristine: true }
     )
     return () => {
-      // window.removeEventListener('beforeunload', onBeforeUnload)
       unsubscribe()
     }
   }, [finalForm])
@@ -195,7 +179,7 @@ export const FormBuilder: FC<FormBuilderProps> = ({
           <>
             <DragDropContext onDragEnd={moveArrayItem}>
               <FormPortalProvider>
-                <ul>
+                {/* <ul>
                   {nameParts.map((part, index) => {
                     if (!isNaN(Number(part))) {
                       // don't render the indexes
@@ -215,11 +199,15 @@ export const FormBuilder: FC<FormBuilderProps> = ({
                       </li>
                     )
                   })}
-                </ul>
+                </ul> */}
                 <FormWrapper id={tinaForm.id}>
-                  {tinaForm && activeFields.length ? (
+                  {tinaForm && activeFormShape.fields?.length ? (
                     <div className="relative">
-                      <FieldsBuilder form={tinaForm} fields={activeFields} />
+                      <FieldsBuilder
+                        form={tinaForm}
+                        // activeField={activeFieldName.split('#')[1]}
+                        fields={activeFormShape.fields}
+                      />
                     </div>
                   ) : (
                     <NoFieldsPlaceholder />
@@ -521,6 +509,99 @@ const Emoji = ({ className = '', ...props }) => (
     {...props}
   />
 )
+
+const getFormShape = ({
+  form,
+  values,
+  namePath,
+  depth,
+}: {
+  form: Form<any>
+  values: object
+  namePath: string[]
+  depth: string[]
+}) => {
+  const [first, ...rest] = namePath
+  const field = form.fields.find((field) => field.name === first)
+  if (field.type === 'object') {
+    if (field.fields) {
+      if (field.list) {
+        const [index, ...rest2] = rest
+        if (isNaN(Number(index))) {
+          throw new Error(`Expected field's name path to include a number`)
+        } else {
+          const templateValue = getIn(values, `${first}.${index}`)
+          const template = field
+          if (rest2.length) {
+            if (rest2.length === 1) {
+              return {
+                formShape: {
+                  fields: template.fields.map((field) => {
+                    console.log('go', field, depth)
+                    return {
+                      ...field,
+                      name: `${depth.join('.')}.${first}.${index}.${
+                        field.name
+                      }`,
+                    }
+                  }),
+                },
+              }
+            } else {
+              return getFormShape({
+                form: template,
+                values: templateValue,
+                namePath: rest2,
+                depth: [...depth, first, index],
+              })
+            }
+          } else {
+            return { formShape: template }
+          }
+        }
+      }
+    } else if (field.templates) {
+      if (field.list) {
+        const [index, ...rest2] = rest
+        if (isNaN(Number(index))) {
+          throw new Error(`Expected field's name path to include a number`)
+        } else {
+          const templateValue = getIn(values, `${first}.${index}`)
+          const template = field.templates[templateValue._template]
+          if (rest2.length) {
+            if (rest2.length === 1) {
+              return {
+                formShape: {
+                  fields: template.fields.map((field) => {
+                    return {
+                      ...field,
+                      name: `${depth.join('.')}.${first}.${index}.${
+                        field.name
+                      }`,
+                    }
+                  }),
+                },
+              }
+            } else {
+              return getFormShape({
+                form: template,
+                values: templateValue,
+                namePath: rest2,
+                depth: [...depth, first, index],
+              })
+            }
+          } else {
+            return { formShape: template }
+          }
+        }
+      }
+    } else {
+      throw new Error(`Expected field to have sub fields or templates`)
+    }
+  } else {
+    throw new Error(`Unexpected non-object field selected for form shape`)
+  }
+}
 
 const getFields2 = ({
   fields,
