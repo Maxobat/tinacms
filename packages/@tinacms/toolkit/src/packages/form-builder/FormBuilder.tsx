@@ -80,6 +80,7 @@ export const FormBuilder: FC<FormBuilderProps> = ({
   const cms = useCMS()
   const [nameParts, setNameParts] = React.useState([])
   const [activeFields, setActiveFields] = React.useState([])
+  const [activeFieldName, setActiveFieldName] = React.useState(null)
   const hideFooter = !!rest.hideFooter
   /**
    * > Why is a `key` being set when this isn't an array?
@@ -111,20 +112,26 @@ export const FormBuilder: FC<FormBuilderProps> = ({
     // TODO: if formId is different than the active form, change it.
     // this will probably only come up with inline active fields
     const [formId, fieldName] = event.value.split('#')
-    const nameParts = fieldName.split('.')
-    setNameParts(nameParts)
+    setActiveFieldName(fieldName)
   })
-  const ref = React.useRef()
 
   React.useEffect(() => {
-    const values = tinaForm.finalForm.getState().values
-    const fields = getFields2({ fields: tinaForm.fields, values, nameParts })
-    if (!fields) {
-      console.log('no fields found, somethings not right')
-    } else {
-      setActiveFields(fields)
+    if (activeFieldName) {
+      const values = tinaForm.finalForm.getState().values
+      const { fields, nameParts } = getFields2({
+        fields: tinaForm.fields,
+        values,
+        nameParts: activeFieldName.split('.'),
+        parentNameParts: [],
+      })
+      if (!fields) {
+        console.log('no fields found, somethings not right')
+      } else {
+        setActiveFields(fields)
+        setNameParts(nameParts)
+      }
     }
-  }, [nameParts.join('.')])
+  }, [activeFieldName])
 
   const moveArrayItem = React.useCallback(
     (result: DropResult) => {
@@ -198,9 +205,9 @@ export const FormBuilder: FC<FormBuilderProps> = ({
                       <li key={`${part}-${index}`}>
                         <PanelHeader
                           onClick={() => {
-                            setNameParts((nameParts) => {
-                              return nameParts.slice(0, index)
-                            })
+                            setActiveFieldName(
+                              nameParts.slice(0, index).join('.')
+                            )
                           }}
                         >
                           {part}
@@ -515,16 +522,22 @@ const Emoji = ({ className = '', ...props }) => (
   />
 )
 
-const getFields2 = ({ fields, values, nameParts, prefix = '' }) => {
+const getFields2 = ({
+  fields,
+  values,
+  nameParts,
+  prefix = '',
+  parentNameParts,
+}) => {
   if (nameParts.length === 0) {
-    return fields
+    return { fields, nameParts }
   }
   const field = fields.find((field) => field.name === nameParts[0])
   if (!field) {
     throw new Error(`Unable to find field for ${nameParts.join('.')}`)
   }
   if (field?.type === 'reference') {
-    return []
+    return { fields: [], nameParts }
   }
   if (field?.type === 'object') {
     if (field.fields) {
@@ -536,13 +549,14 @@ const getFields2 = ({ fields, values, nameParts, prefix = '' }) => {
               subField.name
             }`,
           }))
-          return fields
+          return { fields, nameParts }
         } else {
           const value = getIn(values, `${nameParts[0]}.${nameParts[1]}`)
           return getFields2({
             fields: field.fields,
             values: value,
             nameParts: nameParts.slice(2),
+            parentNameParts: nameParts.filter((part) => isNaN(Number(part))),
             prefix: `${field.name}.${nameParts[1]}`,
           })
         }
@@ -552,13 +566,14 @@ const getFields2 = ({ fields, values, nameParts, prefix = '' }) => {
             ...subField,
             name: `${prefix ? `${prefix}.` : ''}${field.name}.${subField.name}`,
           }))
-          return fields
+          return { fields, nameParts }
         } else {
           const value = getIn(values, `${nameParts[0]}`)
           return getFields2({
             fields: field.fields,
             values: value,
             nameParts: nameParts.slice(1),
+            parentNameParts: nameParts,
             prefix: `${field.name}`,
           })
         }
@@ -575,7 +590,7 @@ const getFields2 = ({ fields, values, nameParts, prefix = '' }) => {
               subField.name
             }`,
           }))
-          return fields
+          return { fields, nameParts }
         } else {
           const value = getIn(values, `${nameParts[0]}.${nameParts[1]}`)
           const template = field.templates[value._template]
@@ -583,6 +598,7 @@ const getFields2 = ({ fields, values, nameParts, prefix = '' }) => {
             fields: template.fields,
             values: value,
             nameParts: nameParts.slice(2),
+            parentNameParts: nameParts.filter((part) => isNaN(Number(part))),
             prefix: `${field.name}.${nameParts[1]}`,
           })
         }
@@ -598,9 +614,12 @@ const getFields2 = ({ fields, values, nameParts, prefix = '' }) => {
     // object-like parent and return their fields, it should
     // also have a way of programmatically focusing the field
     // in the form that was selected.
-    return fields.map((subField: any) => ({
-      ...subField,
-      name: `${prefix ? `${prefix}.` : ''}${subField.name}`,
-    }))
+    return {
+      fields: fields.map((subField: any) => ({
+        ...subField,
+        name: `${prefix ? `${prefix}.` : ''}${subField.name}`,
+      })),
+      nameParts: parentNameParts.slice(0, parentNameParts.length - 1),
+    }
   }
 }

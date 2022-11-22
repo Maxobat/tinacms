@@ -1,5 +1,6 @@
 import React, { Suspense, useEffect, useState } from 'react'
 import { TinaMarkdown } from 'tinacms/dist/rich-text'
+import { getField, useTina } from 'tinacms/dist/react'
 import { Prism } from 'tinacms/dist/rich-text/prism'
 
 import { DefaultRenderer, Explorer } from './explorer'
@@ -14,26 +15,39 @@ const Renderer = (props) => {
       <Explorer {...props} defaultExpanded={false} renderer={DefaultRenderer} />
     )
   }
-  if (props.type === 'object') {
-    if (props.value?.type === 'root') {
-      return (
-        <Explorer
-          {...props}
-          defaultExpanded={{ body: true }}
-          valueView={(value) => {
-            console.log(value)
-            return (
-              <div className="font-sans">
-                <Markdown content={value} />
-              </div>
-            )
-          }}
-        />
-      )
-    } else {
-    }
-  }
-  return <Explorer {...props} defaultExpanded={true} />
+  // if (props.type === 'object') {
+  //   if (props.value?.type === 'root') {
+  //     return (
+  //       <Explorer
+  //         {...props}
+  //         defaultExpanded={{ body: true }}
+  //         valueView={(value) => {
+  //           console.log(value)
+  //           return (
+  //             <div className="font-sans">
+  //               <Markdown content={value} />
+  //             </div>
+  //           )
+  //         }}
+  //       />
+  //     )
+  //   } else {
+  //   }
+  // }
+  return (
+    <Explorer
+      {...props}
+      defaultExpanded={true}
+      handleView={(key, parentValue) => {
+        return (
+          <span data-tinafield={getField(parentValue, key)}>
+            {parentValue[key]}
+          </span>
+        )
+        // return value
+      }}
+    />
+  )
 }
 
 export function Json(props: { src: object }) {

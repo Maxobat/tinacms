@@ -241,6 +241,7 @@ type RendererProps = {
   handleEntry: (entry: Entry) => JSX.Element
   label?: string
   value: unknown
+  parentValue: object
   valueView?: (entry: Entry) => JSX.Element
   initialExpanded?: boolean
   subEntries: Entry[]
@@ -281,6 +282,7 @@ export const DefaultRenderer: Renderer = ({
   handleEntry,
   label,
   value,
+  parentValue,
   valueView,
   subEntries = [],
   subEntryPages = [],
@@ -288,6 +290,8 @@ export const DefaultRenderer: Renderer = ({
   expanded = false,
   copyable = false,
   initialExpanded = false,
+  // handleView = (value) => displayValue(value),
+  handleView,
   toggleExpanded,
   pageSize,
 }) => {
@@ -356,7 +360,10 @@ export const DefaultRenderer: Renderer = ({
         </>
       ) : (
         <>
-          <Label>{label}:</Label> <Value>{displayValue(value)}</Value>
+          <Label>{label}:</Label>{' '}
+          <Value>
+            {handleView ? handleView(label, parentValue) : displayValue(value)}
+          </Value>
         </>
       )}
     </Entry>
@@ -373,6 +380,7 @@ type Property = {
   defaultExpanded?: boolean | Record<string, boolean>
   label: string
   value: unknown
+  parentValue: unknown
 }
 
 function isIterable(x: any): x is Iterable<unknown> {
@@ -385,6 +393,7 @@ export function Explorer({
   renderer = DefaultRenderer,
   pageSize = 100,
   copyable = false,
+  parentValue,
   ...rest
 }: ExplorerProps) {
   const [expanded, setExpanded] = React.useState(Boolean(defaultExpanded))
@@ -400,7 +409,9 @@ export function Explorer({
         : defaultExpanded?.[sub.label]
     return {
       ...sub,
+      key: `${sub.label}`,
       defaultExpanded: subDefaultExpanded,
+      parentValue: value,
     }
   }
 
@@ -442,6 +453,7 @@ export function Explorer({
       <Explorer
         key={entry.label}
         value={value}
+        parentValue={parentValue}
         renderer={renderer}
         copyable={copyable}
         {...rest}
@@ -452,6 +464,7 @@ export function Explorer({
     subEntries,
     subEntryPages,
     value,
+    parentValue,
     expanded,
     copyable,
     toggleExpanded,

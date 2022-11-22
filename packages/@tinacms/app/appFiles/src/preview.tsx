@@ -42,18 +42,21 @@ export const Preview = (
     }
   }, [props.iframeRef.current])
 
+  const hotkey = useKeyPress('Shift', props.iframeRef.current)
+
   const tinaFields = React.useMemo(() => {
+    if (!hotkey) {
+      return []
+    }
     if (props.iframeRef.current) {
       const tinaFieldNodes =
         props.iframeRef.current.contentWindow?.document.querySelectorAll(
           '[data-tinafield]'
         )
-      // const Array.from(tinaFieldNodes))
-      console.log(tinaFieldNodes)
       return Array.from(tinaFieldNodes)
     }
     return []
-  }, [props.iframeRef.current])
+  }, [hotkey])
 
   return (
     <div className="tina-tailwind">
@@ -69,11 +72,16 @@ export const Preview = (
           <div className="col-span-5 ">
             <div className="h-screen flex flex-col">
               <div className="relative flex-1 bg-gray-300 col-span-2 overflow-scroll flex items-center justify-center">
-                <div className="absolute inset-0 pointer-events-none">
-                  {tinaFields.map((node) => {
+                <div
+                  className={`absolute inset-0 ${
+                    hotkey ? '' : 'pointer-events-none'
+                  }`}
+                >
+                  {tinaFields.map((node, index) => {
                     const rect = node.getBoundingClientRect()
                     return (
-                      <div
+                      <button
+                        key={`${node.getAttribute('data-tinafield')}-${index}`}
                         onClick={() => {
                           cms.events.dispatch({
                             type: 'forms:fields:select',
@@ -156,4 +164,36 @@ const QueryMachine = (props: {
   }, [props.iframeRef.current])
 
   return null
+}
+
+function useKeyPress(targetKey: string, iframe?: HTMLIFrameElement) {
+  // State for keeping track of whether key is pressed
+  const [keyPressed, setKeyPressed] = React.useState<boolean>(false)
+  // If pressed key is our target key then set to true
+  function downHandler({ key }: { key: string }) {
+    if (key === targetKey) {
+      setKeyPressed(true)
+    }
+  }
+  // If released key is our target key then set to false
+  const upHandler = ({ key }: { key: string }) => {
+    if (key === targetKey) {
+      setKeyPressed(false)
+    }
+  }
+  // Add event listeners
+  React.useEffect(() => {
+    window.addEventListener('keydown', downHandler)
+    window.addEventListener('keyup', upHandler)
+    iframe?.contentWindow?.window.addEventListener('keydown', downHandler)
+    iframe?.contentWindow?.window.addEventListener('keyup', upHandler)
+    // Remove event listeners on cleanup
+    return () => {
+      window.removeEventListener('keydown', downHandler)
+      window.removeEventListener('keyup', upHandler)
+      iframe?.contentWindow?.window.removeEventListener('keydown', downHandler)
+      iframe?.contentWindow?.window.removeEventListener('keyup', upHandler)
+    }
+  }, [iframe?.contentWindow?.window]) // Empty array ensures that effect is only run on mount and unmount
+  return keyPressed
 }
