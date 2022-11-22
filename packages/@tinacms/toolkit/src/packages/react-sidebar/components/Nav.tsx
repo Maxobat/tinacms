@@ -130,8 +130,9 @@ export const Nav = ({
                             resizingSidebar: false,
                           })
                           setEdit(false)
-                          if (cms?.api?.tina?.setToken) {
-                            cms.api.tina.setToken(null)
+
+                          if (cms?.api?.tina?.logOut) {
+                            cms.api.tina.logOut()
                           }
                         }}
                       >

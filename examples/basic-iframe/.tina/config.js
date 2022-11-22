@@ -1,6 +1,47 @@
-import { defineConfig } from 'tinacms'
+import { defineConfig, Client } from 'tinacms'
+export class LogansCoolClient extends Client {
+  async authenticate() {
+    localStorage.setItem(
+      'logan',
+      JSON.stringify({ name: 'Logan', role: 'admin' })
+    )
+    return {}
+  }
+
+  async logOut() {
+    localStorage.removeItem('logan')
+    window.location.href = '/'
+  }
+
+  async getUser() {
+    const userStr = localStorage.getItem('logan')
+    if (!userStr) {
+      return undefined
+    } else {
+      try {
+        return JSON.parse(userStr)
+      } catch {
+        return undefined
+      }
+    }
+  }
+
+  constructor(args) {
+    console.log('LogansCoolClient', args)
+    super({
+      ...args,
+      customContentApiUrl: 'http://localhost:4001/graphql',
+      getTokenFn: () => {
+        return 'a cool token'
+      },
+      url: '/api/tina',
+      tokenStorage: 'CUSTOM',
+    })
+  }
+}
 
 export default defineConfig({
+  ExtendClient: LogansCoolClient,
   branch: '',
   clientId: null,
   token: null,

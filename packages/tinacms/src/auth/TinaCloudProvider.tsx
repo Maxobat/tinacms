@@ -143,6 +143,7 @@ export const TinaCloudProvider = (
   props: TinaCloudAuthWallProps &
     CreateClientProps & { cmsCallback?: (cms: TinaCMS) => TinaCMS }
 ) => {
+  console.log('props', props)
   const baseBranch = props.branch || 'main'
   const [currentBranch, setCurrentBranch] = useLocalStorage(
     'tinacms-current-branch',

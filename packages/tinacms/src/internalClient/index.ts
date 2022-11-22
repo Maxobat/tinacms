@@ -137,7 +137,7 @@ export class Client {
   }
 
   public get isLocalMode() {
-    return this.contentApiUrl.includes('localhost')
+    return false
   }
 
   setBranch(branchName: string) {
@@ -172,7 +172,7 @@ mutation addPendingDocumentMutation(
     collection: $collection
   ) {
     ... on Document {
-      sys {
+      _sys {
         relativePath
         path
         breadcrumbs
@@ -448,6 +448,10 @@ mutation addPendingDocumentMutation(
     })
   }
 
+  async logOut() {
+    this.setToken(null)
+  }
+
   async getUser() {
     if (!this.clientId) {
       return null
@@ -520,6 +524,10 @@ export class LocalClient extends Client {
   }
 
   async isAuthorized(): Promise<boolean> {
+    return true
+  }
+
+  public get isLocalMode() {
     return true
   }
 

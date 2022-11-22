@@ -237,6 +237,7 @@ export const TinaCMSProvider2 = ({
   return (
     <>
       <TinaCloudProvider
+        ExtendClient={props.ExtendClient}
         branch={branch}
         clientId={clientId}
         tinaioConfig={props.tinaioConfig}

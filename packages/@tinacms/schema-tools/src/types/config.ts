@@ -13,6 +13,7 @@ limitations under the License.
 
 // TODO: ClintID, Branch, Token should not be optional
 export interface TinaCloudSchemaConfig<Store = any> {
+  ExtendClient: any
   client?: {
     referenceDepth?: number
   }
