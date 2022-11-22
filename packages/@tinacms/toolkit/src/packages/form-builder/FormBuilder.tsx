@@ -111,10 +111,10 @@ export const FormBuilder: FC<FormBuilderProps> = ({
     () =>
       cms.events.subscribe('forms:fields:select', (event) => {
         const [formId, fieldName] = event.value.split('#')
+        setActiveFormId(formId)
         if (!fieldName) {
           return
         }
-        console.log(event.value)
         const values = tinaForm.finalForm.getState().values
         const { formShape } = getFormShape({
           form: tinaForm,
