@@ -537,7 +537,6 @@ const getFormShape = ({
               return {
                 formShape: {
                   fields: template.fields.map((field) => {
-                    console.log('go', field, depth)
                     return {
                       ...field,
                       name: `${depth.join('.')}.${first}.${index}.${
@@ -558,6 +557,33 @@ const getFormShape = ({
           } else {
             return { formShape: template }
           }
+        }
+      } else {
+        const rest2 = rest
+        const template = field
+        const templateValue = getIn(values, `${first}`)
+        if (rest2.length) {
+          if (rest2.length === 1) {
+            return {
+              formShape: {
+                fields: template.fields.map((field) => {
+                  return {
+                    ...field,
+                    name: `${depth.join('.')}.${first}.${field.name}`,
+                  }
+                }),
+              },
+            }
+          } else {
+            return getFormShape({
+              form: template,
+              values: templateValue,
+              namePath: rest2,
+              depth: [...depth, first],
+            })
+          }
+        } else {
+          return { formShape: template }
         }
       }
     } else if (field.templates) {
@@ -599,6 +625,17 @@ const getFormShape = ({
       throw new Error(`Expected field to have sub fields or templates`)
     }
   } else {
+    // FIXME: this works for `type: string, list: true`, but could be done better
+    return {
+      formShape: {
+        fields: form.fields.map((field) => {
+          return {
+            ...field,
+            name: `${depth.join('.')}.${field.name}`,
+          }
+        }),
+      },
+    }
     throw new Error(`Unexpected non-object field selected for form shape`)
   }
 }

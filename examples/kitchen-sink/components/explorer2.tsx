@@ -1,7 +1,12 @@
 import React from 'react'
 
-type RenderValue = (args: { value: string | number | boolean }) => JSX.Element
-type RenderRichText = (args: { value: { type: 'root' } }) => JSX.Element
+type RenderValue = (args: {
+  value: unknown
+  keyName: string
+  parentValue: object | object[]
+  parentKeyName: string
+}) => JSX.Element
+type RenderRichText = (args: { value: unknown }) => JSX.Element
 
 export const Explorer2 = (props: {
   value: object
@@ -16,16 +21,20 @@ export const Explorer2 = (props: {
 }
 const ObjectValueRenderer = (props: {
   value: object
+  parentValue: object | object[]
+  parentKeyName: string
   renderValue: RenderValue
   renderRichText: RenderRichText
   showMetaFields?: boolean
 }) => {
-  const subEntries = Object.entries(props.value).map(([keyName, value]) => {
+  const subEntries = Object.entries(props.value).map(([keyName, subValue]) => {
     return (
       <div key={keyName} className="gap-2">
         <UnknownRenderer
           keyName={keyName}
-          value={value}
+          value={subValue}
+          parentValue={props.value}
+          parentKeyName={props.parentKeyName}
           renderValue={props.renderValue}
           renderRichText={props.renderRichText}
           showMetaFields={props.showMetaFields}
@@ -39,18 +48,24 @@ const ObjectValueRenderer = (props: {
 const UnknownRenderer = ({
   keyName,
   value,
+  parentValue,
+  parentKeyName,
   renderValue,
   renderRichText,
   showMetaFields,
 }: {
   keyName: string
   value: unknown
+  parentValue: object | object[]
+  parentKeyName: string
   renderValue: RenderValue
   renderRichText: RenderRichText
   showMetaFields?: boolean
 }) => {
   const typeOfValue = typeof value
-  const [expanded, setExpanded] = React.useState(true)
+  const [expanded, setExpanded] = React.useState(
+    value?.type === 'root' ? false : true
+  )
 
   if (!showMetaFields) {
     if (
@@ -83,6 +98,8 @@ const UnknownRenderer = ({
                 key={String(index)}
                 keyName={String(index)}
                 value={item}
+                parentKeyName={keyName}
+                parentValue={parentValue}
                 renderValue={renderValue}
                 renderRichText={renderRichText}
               />
@@ -96,40 +113,69 @@ const UnknownRenderer = ({
   if (typeOfValue === 'object') {
     if (value?.type === 'root') {
       return (
-        <Value keyName={keyName} value={value} renderValue={renderRichText} />
+        <div className="flex gap-2">
+          <button
+            onClick={() => setExpanded((exp) => !exp)}
+            className="min-w-[48px] flex justify-start gap-2"
+          >
+            {keyName}: {!expanded && '{...}'}
+          </button>
+          <div>{expanded && renderRichText({ value })}</div>
+        </div>
       )
     }
     return (
       <ObjectRenderer
         keyName={keyName}
         value={value}
+        parentValue={parentValue}
+        parentKeyName={parentKeyName}
         renderValue={renderValue}
         renderRichText={renderRichText}
       />
     )
   }
-  return <Value keyName={keyName} value={value} renderValue={renderValue} />
+  return (
+    <Value
+      keyName={keyName}
+      value={value}
+      parentValue={parentValue}
+      parentKeyName={parentKeyName}
+      renderValue={renderValue}
+    />
+  )
 }
 
 const Value = ({
   keyName,
   value,
+  parentValue,
+  parentKeyName,
   renderValue,
 }: {
   keyName: string
-  value: string | number | boolean
+  value: unknown
   renderValue: RenderValue
+  parentKeyName: string
+  parentValue: object | object[]
 }) => {
   const keyDisplay = isNaN(Number(keyName)) ? `${keyName}: ` : ``
   return (
     <div className="flex gap-2">
       <div>{keyDisplay}</div>
-      <div>{renderValue({ value })}</div>
+      <div>{renderValue({ value, keyName, parentValue, parentKeyName })}</div>
     </div>
   )
 }
 
-const ObjectRenderer = ({ keyName, value, renderValue, renderRichText }) => {
+const ObjectRenderer = ({
+  keyName,
+  value,
+  parentValue,
+  parentKeyName,
+  renderValue,
+  renderRichText,
+}) => {
   const [showMetaFields, setShowMetaFields] = React.useState(false)
   const [expanded, setExpanded] = React.useState(true)
   const v = value as object
@@ -170,6 +216,8 @@ const ObjectRenderer = ({ keyName, value, renderValue, renderRichText }) => {
           <div className="pl-4">
             <ObjectValueRenderer
               value={v}
+              parentValue={parentValue}
+              parentKeyName={parentKeyName}
               renderValue={renderValue}
               renderRichText={renderRichText}
               showMetaFields={showMetaFields}

@@ -25,6 +25,7 @@ import * as G from 'graphql'
 import { formify } from '../formify'
 import { Data, documentMachine } from './document-machine'
 import type { ActorRefFrom } from 'xstate'
+import { getIn } from 'final-form'
 
 export type DataType = Record<string, unknown>
 type DocumentInfo = {
@@ -407,16 +408,15 @@ export const queryMachine =
             }
             yield* innerTraversal(o)
           }
-          let currentID = null
           const nodePaths = []
           for (var [key, value, path, parent] of traverse(newData.data)) {
             if (value?._internalSys) {
               nodePaths.push(path)
-              currentID = value._internalSys.path
               const fields = {}
               const parents = nodePaths.filter((nodePath) => {
                 return path.join('.').startsWith(nodePath.join('.'))
               })
+
               const nearestParent = parents.reduce(function (a, b) {
                 return a.length < b.length ? a : b
               })
@@ -437,7 +437,7 @@ export const queryMachine =
                 ].join('.')
               })
               value[META_KEY] = {
-                id: currentID,
+                id: value?._internalSys.path,
                 fields,
               }
             } else if (
@@ -446,32 +446,37 @@ export const queryMachine =
               value !== null
             ) {
               if (key !== META_KEY) {
-                const id = currentID
-                const fields = {}
-                Object.keys(value).map((key) => {
-                  if (
-                    [
-                      '__typename',
-                      '_internalSys',
-                      '_internalValues',
-                      '_sys',
-                    ].includes(key)
-                  ) {
-                    return false
-                  }
-                  const parents = nodePaths.filter((nodePath) => {
-                    return path.join('.').startsWith(nodePath.join('.'))
-                  })
+                const parents = nodePaths.filter((nodePath) => {
+                  return path.join('.').startsWith(nodePath.join('.'))
+                })
+                if (parents.length) {
                   const nearestParent = parents.reduce(function (a, b) {
                     return a.length < b.length ? a : b
                   })
-                  fields[key] = [...path.slice(nearestParent.length), key].join(
-                    '.'
-                  )
-                })
-                value[META_KEY] = {
-                  id,
-                  fields,
+                  const parent = getIn(newData.data, nearestParent.join('.'))
+                  const id = parent._internalSys.path
+                  const fields = {}
+                  Object.keys(value).map((key) => {
+                    if (
+                      [
+                        '__typename',
+                        '_internalSys',
+                        '_internalValues',
+                        '_sys',
+                      ].includes(key)
+                    ) {
+                      return false
+                    }
+
+                    fields[key] = [
+                      ...path.slice(nearestParent.length),
+                      key,
+                    ].join('.')
+                  })
+                  value[META_KEY] = {
+                    id,
+                    fields,
+                  }
                 }
               }
             }

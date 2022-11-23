@@ -72,14 +72,27 @@ export function Json(props: { src: object }) {
               value={props.src}
               renderRichText={({ value }) => {
                 return (
-                  <div className="font-sans px-2 border-l-2 bg-gray-50 w-full">
+                  <div className="font-sans px-2 border-l-2 bg-gray-50 w-full prose">
                     <TinaMarkdown content={value} />
                   </div>
                 )
               }}
-              renderValue={({ value }) => (
-                <span className="text-orange-600">{value}</span>
-              )}
+              renderValue={({ value, keyName, parentValue, parentKeyName }) => {
+                let tinaField = ''
+                if (!isNaN(Number(keyName))) {
+                  tinaField = `${getField(
+                    parentValue,
+                    parentKeyName
+                  )}.${keyName}`
+                } else {
+                  tinaField = getField(parentValue, keyName)
+                }
+                return (
+                  <span className="text-orange-600" data-tinafield={tinaField}>
+                    {value}
+                  </span>
+                )
+              }}
             />
           </div>
         </div>

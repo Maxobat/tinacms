@@ -4,6 +4,7 @@ import { Container } from "../container";
 import { Section } from "../section";
 import { ThemeContext } from "../theme";
 import { TinaMarkdown } from "tinacms/dist/rich-text";
+import { getField } from "tinacms/dist/react";
 import type { TinaTemplate } from "tinacms";
 
 export const Hero = ({ data, parentField }) => {
@@ -28,7 +29,8 @@ export const Hero = ({ data, parentField }) => {
         <div className="row-start-2 lg:row-start-1 lg:col-start-1 lg:col-end-3 text-center lg:text-left">
           {data.tagline && (
             <h2
-              data-tinafield={`${parentField}.tagline`}
+              // data-tinafield={`${parentField}.tagline`}
+              data-tinafield={getField(data, "tagline")}
               className="relative inline-block px-3 py-1 mb-8 text-md font-bold tracking-wide title-font z-20"
             >
               {data.tagline}
@@ -37,7 +39,8 @@ export const Hero = ({ data, parentField }) => {
           )}
           {data.headline && (
             <h3
-              data-tinafield={`${parentField}.headline`}
+              // data-tinafield={`${parentField}.headline`}
+              data-tinafield={getField(data, "headline")}
               className={`w-full relative	mb-10 text-5xl font-extrabold tracking-normal leading-tight title-font`}
             >
               <span
@@ -72,7 +75,7 @@ export const Hero = ({ data, parentField }) => {
         </div>
         {data.image && (
           <div
-            data-tinafield={`${parentField}.image`}
+            data-tinafield={getField(data.image, "src")}
             className="row-start-1 flex justify-center"
           >
             <img
