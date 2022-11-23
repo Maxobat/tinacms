@@ -4,6 +4,7 @@ import { getField, useTina } from 'tinacms/dist/react'
 import { Prism } from 'tinacms/dist/rich-text/prism'
 
 import { DefaultRenderer, Explorer } from './explorer'
+import { Explorer2 } from './explorer2'
 
 const Renderer = (props) => {
   if (
@@ -58,6 +59,32 @@ export function Json(props: { src: object }) {
   }, [])
   if (!isClient) {
     return null
+  }
+
+  const t = true
+  // const t = false
+  if (t) {
+    return (
+      <div className="px-4">
+        <div className="mx-auto my-8 border rounded-lg p-8 shadow-lg max-w-5xl mx-auto shadow-lg">
+          <div className="h-full overflow-scroll">
+            <Explorer2
+              value={props.src}
+              renderRichText={({ value }) => {
+                return (
+                  <div className="font-sans px-2 border-l-2 bg-gray-50 w-full">
+                    <TinaMarkdown content={value} />
+                  </div>
+                )
+              }}
+              renderValue={({ value }) => (
+                <span className="text-orange-600">{value}</span>
+              )}
+            />
+          </div>
+        </div>
+      </div>
+    )
   }
 
   return (
