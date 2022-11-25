@@ -20,6 +20,7 @@ import * as React from 'react'
 import { AiFillWarning } from 'react-icons/ai'
 
 export const LocalWarning = () => {
+  return null
   return (
     <a
       className="flex-grow-0 flex w-full text-xs items-center py-1 px-4 text-yellow-600 bg-gradient-to-r from-yellow-50 to-yellow-100 border-b border-yellow-200"
