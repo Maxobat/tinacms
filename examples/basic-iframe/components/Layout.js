@@ -78,7 +78,7 @@ export const Layout = (props) => {
             >
               SIGN IN
             </a> */}
-            <button className="px-6 py-2 border-[1.5px] text-sm font-normal uppercase tracking-[0.035rem] border-indigo-700 rounded-[12px] shadow-[inset_0_0_8px_2px_rgba(71,66,206,0.4)] drop-shadow-[0_0_20px_rgba(71,66,206,0.3)] backdrop-blur bg-slate-900/50 hover:bg-indigo-900/50 text-indigo-200 hover:text-white">
+            <button className="px-6 py-2 border-[1.5px] text-sm font-normal uppercase tracking-[0.035rem] border-indigo-700 rounded-[10px] shadow-[inset_0_0_8px_2px_rgba(71,66,206,0.4)] drop-shadow-[0_0_20px_rgba(71,66,206,0.3)] backdrop-blur bg-slate-900/50 hover:bg-indigo-900/50 text-indigo-200 hover:text-white">
               <span className="inline-block drop-shadow-[0_0_6px_rgba(30,32,87,0.5)]">
                 SIGN UP
               </span>

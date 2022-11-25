@@ -67,10 +67,6 @@ export default defineConfig({
               {
                 name: 'button',
                 label: 'Button',
-                match: {
-                  start: '{%',
-                  end: '%}',
-                },
                 fields: [
                   {
                     name: 'text',

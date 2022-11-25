@@ -36,9 +36,9 @@ export default function Home(props) {
 
   return (
     <Layout>
-      <div className="max-w-prose mx-auto px-12 pb-6 pt-12 flex flex-col gap-12 justify-center h-full ">
+      <div className="max-w-prose mx-auto px-12 pb-6 pt-12 flex flex-col gap-8 justify-center h-full ">
         {title && (
-          <h2 className="text-[5rem] leading-[1] font-[500] bg-gradient-to-t from-indigo-200 via-indigo-50 to-white text-transparent bg-clip-text drop-shadow-[0_0_20px_rgba(71,66,206,1)] ml-1">
+          <h2 className="text-[5rem] pb-4 leading-[1] font-[500] bg-gradient-to-t from-indigo-200 via-indigo-50 to-white text-transparent bg-clip-text drop-shadow-[0_0_20px_rgba(71,66,206,1)] ml-1">
             {title}
           </h2>
         )}
