@@ -65,8 +65,8 @@ export default defineConfig({
             isBody: true,
             templates: [
               {
-                name: 'WarningCallout',
-                label: 'WarningCallout',
+                name: 'button',
+                label: 'Button',
                 match: {
                   start: '{%',
                   end: '%}',
@@ -77,9 +77,12 @@ export default defineConfig({
                     label: 'Text',
                     type: 'string',
                     required: true,
-                    ui: {
-                      component: 'textarea',
-                    },
+                  },
+                  {
+                    name: 'link',
+                    label: 'Link',
+                    type: 'string',
+                    required: true,
                   },
                 ],
               },

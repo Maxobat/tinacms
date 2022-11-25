@@ -1,0 +1,21 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+html {
+  font-family: 'Lexend', sans-serif;
+  letter-spacing: 0.01em;
+}
+
+p {
+  font-size: 1.5rem;
+  line-height: 1.6;
+  font-weight: 300;
+}
+
+strong,
+b {
+  font-weight: 600;
+  color: white;
+  @apply drop-shadow-[0_0_10px_rgba(71,66,206,0.7)];
+}
