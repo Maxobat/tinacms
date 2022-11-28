@@ -395,7 +395,7 @@ export const queryMachine =
               }
               // add the new object to our memory.
               memory.add(o)
-              for (var i of Object.keys(o)) {
+              for (let i of Object.keys(o)) {
                 const itemPath = path.concat(i)
                 yield [i, o[i], itemPath, o]
                 if (o[i] !== null && typeof o[i] == 'object') {
@@ -409,7 +409,7 @@ export const queryMachine =
             yield* innerTraversal(o)
           }
           const nodePaths = []
-          for (var [key, value, path, parent] of traverse(newData.data)) {
+          for (let [key, value, path, parent] of traverse(newData.data)) {
             if (value?._internalSys) {
               nodePaths.push(path)
               const fields = {}
