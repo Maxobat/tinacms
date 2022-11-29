@@ -1,0 +1,33 @@
+query getPost($relativePath: String!) {
+    recentPosts: postConnection(last: 2) {
+    edges {
+      node {
+        _sys {
+          filename
+          basename
+          breadcrumbs
+          path
+          relativePath
+          extension
+        }
+        ...PostParts
+      }
+    }
+  }
+  post(relativePath: $relativePath) {
+    title
+    body
+    posts {
+      __typename
+      ... on PostPosts {
+        post {
+          __typename
+          ... on Post {
+            title
+            body
+          }
+        }
+      }
+    }
+  }
+}
