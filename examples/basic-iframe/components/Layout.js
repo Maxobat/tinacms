@@ -9,7 +9,7 @@ export const Layout = (props) => {
         <meta name="description" content="A TinaCMS Application" />
         <link rel="icon" href="/favicon.ico" />
       </Head>
-      <nav className="absolute top-0 w-full left-0 border-b-[1.5px] text-base font-medium uppercase tracking-wide border-indigo-700/50 shadow-[inset_0_-4px_12px_rgba(71,66,206,0.3)] drop-shadow-[0_5px_15px_rgba(71,66,206,0.4)] backdrop-blur bg-black/50 text-white">
+      <nav className="absolute top-0 w-full left-0 border-b-[1.5px] border-indigo-700/60 text-base font-medium uppercase tracking-wide shadow-[inset_0_-4px_12px_rgba(71,66,206,0.3)] drop-shadow-[0_5px_15px_rgba(71,66,206,0.4)] backdrop-blur bg-black/20 text-white">
         <div className="w-full flex justify-between items-center max-w-6xl mx-auto">
           <div className="px-8 py-5">
             <svg
@@ -39,7 +39,7 @@ export const Layout = (props) => {
                 viewBox="0 0 230 230"
                 fill="none"
                 xmlns="http://www.w3.org/2000/svg"
-                className="absolute -z-10 top-0 left-1/2 -translate-x-1/2 w-[200%] h-full opacity-70"
+                className="absolute -z-10 top-0 left-1/2 -translate-x-1/2 w-[180%] h-full opacity-80"
               >
                 <rect
                   x="230"
@@ -58,8 +58,8 @@ export const Layout = (props) => {
                     gradientUnits="userSpaceOnUse"
                     gradientTransform="translate(345 230) rotate(90) scale(230 115)"
                   >
-                    <stop stop-color="#1E2057" />
-                    <stop offset="1" stop-color="#1E2057" stop-opacity="0" />
+                    <stop stopColor="#1E2057" />
+                    <stop offset="1" stopColor="#1E2057" stop-opacity="0" />
                   </radialGradient>
                 </defs>
               </svg>
@@ -71,15 +71,15 @@ export const Layout = (props) => {
               CONTACT
             </li>
           </ul>
-          <div className="px-8 py-5 flex gap-6 items-center">
+          <div className="px-8 py-[1.125rem] flex gap-6 items-center">
             {/* <a
               href="#"
               className="text-sm text-indigo-300 hover:text-white tracking-[0.035rem]"
             >
               SIGN IN
             </a> */}
-            <button className="px-6 py-2 border-[1.5px] text-sm font-normal uppercase tracking-[0.035rem] border-indigo-700 rounded-[10px] shadow-[inset_0_0_8px_2px_rgba(71,66,206,0.4)] drop-shadow-[0_0_20px_rgba(71,66,206,0.3)] backdrop-blur bg-slate-900/50 hover:bg-indigo-900/50 text-indigo-200 hover:text-white">
-              <span className="inline-block drop-shadow-[0_0_6px_rgba(30,32,87,0.5)]">
+            <button className="px-[1.375rem] py-[0.55rem] border-[1.5px] text-sm font-normal uppercase tracking-[0.035rem] border-indigo-700 rounded-[10px] shadow-[inset_0_0_7px_2px_rgba(71,66,206,0.3)] drop-shadow-[0_0_20px_rgba(71,66,206,0.3)] backdrop-blur bg-slate-900/50 hover:bg-indigo-900/50 text-indigo-200 hover:text-white">
+              <span className="inline-block whitespace-nowrap drop-shadow-[0_0_6px_rgba(30,32,87,0.5)]">
                 SIGN UP
               </span>
             </button>

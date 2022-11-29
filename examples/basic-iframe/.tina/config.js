@@ -67,6 +67,12 @@ export default defineConfig({
               {
                 name: 'button',
                 label: 'Button',
+                ui: {
+                  defaultItem: {
+                    text: 'Get Started',
+                    link: '/get-started',
+                  },
+                },
                 fields: [
                   {
                     name: 'text',
