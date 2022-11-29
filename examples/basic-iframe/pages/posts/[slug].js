@@ -1,36 +1,16 @@
 import React from 'react'
 import { staticRequest } from 'tinacms'
+import { client } from '../../.tina/__generated__/client'
 import { Layout } from '../../components/Layout'
-import { useEditState, useTina } from 'tinacms/dist/react'
-
-const query = `query getPost($relativePath: String!) {
-  post(relativePath: $relativePath) {
-    title
-    body
-    posts {
-      __typename
-      ... on PostPosts {
-        post {
-          __typename
-          ... on Post {
-            title
-            body
-          }
-        }
-      }
-    }
-  }
-}
-`
+import { useTina } from 'tinacms/dist/react'
 
 export default function Home(props) {
   const { data } = useTina({
-    query,
+    query: props.query,
     variables: props.variables,
     data: props.data,
   })
-  const { edit } = useEditState()
-  console.log('edit', edit)
+  console.log(data)
 
   const cleanedObject = React.useMemo(() => {
     const obj = {}
@@ -83,23 +63,17 @@ export const getStaticPaths = async () => {
 }
 export const getStaticProps = async (ctx) => {
   const variables = {
-    relativePath: ctx.params.slug + '.md',
+    relativePath: ctx.params.slug + '.json',
   }
-  let data = {}
-  try {
-    data = await staticRequest({
-      query,
-      variables,
-    })
-  } catch (error) {
-    // swallow errors related to document creation
-  }
+  const data = await client.queries.getPost({
+    relativePath: ctx.params.slug + '.json',
+  })
 
   return {
     props: {
-      data,
-      query,
-      variables,
+      data: data.data,
+      query: data.query,
+      variables: data.variables,
     },
   }
 }

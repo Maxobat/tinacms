@@ -91,7 +91,7 @@ export default defineConfig({
         label: 'Blog Posts',
         name: 'post',
         path: 'content/post',
-        format: 'md',
+        format: 'json',
         ui: {
           router: ({ document }) => {
             return `/posts/${document._sys.filename}`
