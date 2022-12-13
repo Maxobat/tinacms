@@ -29,6 +29,7 @@ import {
 import { MutationSignalProvider } from './MutationSignal'
 // @ts-ignore importing css is not recognized
 import styles from '../styles.css'
+import { EditModeToggle } from './EditModeToggle'
 
 export interface TinaUIProps {
   position?: SidebarPosition
@@ -62,6 +63,7 @@ export const TinaUI: React.FC<TinaUIProps> = ({ children, position }) => {
           )}
           <ActiveFieldIndicator />
           <ReverseActiveFieldIndicator />
+          <EditModeToggle />
         </div>
         {/* Dragging across the iframe causes mouse events to stop propagating so there's a laggy feeling without this */}
         <div className={`${resizingSidebar ? 'pointer-events-none' : ''}`}>
