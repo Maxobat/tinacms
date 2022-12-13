@@ -32,7 +32,7 @@ function getCookie(name) {
 
 function enterEditMode() {
   setCookie('tina-edit', 'true', 90)
-  document.location.reload()
+  document.location.href = `/admin#/~${window.location.pathname}`
 }
 function exitEditMode() {
   setCookie('tina-edit', 'false', 90)
