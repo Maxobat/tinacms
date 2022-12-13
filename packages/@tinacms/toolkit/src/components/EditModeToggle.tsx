@@ -37,7 +37,7 @@ function enterEditMode() {
 function exitEditMode() {
   setCookie('tina-edit', 'false', 90)
   //remove "/admin#/~" from windows url
-  const path = window.location.href.split('/#/~')
+  const path = window.location.href.split('#/~')
   window.location.href = path.length > 0 ? path[1] : '/'
 }
 
