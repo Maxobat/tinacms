@@ -38,12 +38,12 @@ function exitEditMode() {
   setCookie('tina-edit', 'false', 90)
   //remove "/admin#/~" from windows url
   const path = window.location.href.split('#/~')
-  window.location.href = path.length > 0 ? path[1] : '/'
+  window.location.href = path.length > 0 ? path[1] || '/' : '/'
 }
 
 export const EditModeToggle = () => (
   <div
-    className="fixed left-5 bottom-5 p-5 rounded-full bg-gray-100 shadow-lg border cursor-pointer"
+    className="z-50 fixed left-5 bottom-5 p-5 rounded-full bg-gray-100 shadow-lg border cursor-pointer"
     onClick={() => {
       if (getCookie('tina-edit') === 'true') {
         exitEditMode()
