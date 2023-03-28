@@ -1,0 +1,108 @@
+fragment PageParts on Page {
+  ... on PageShowcase {
+    title
+    items {
+      __typename
+      title
+      description
+      image
+    }
+  }
+  ... on PageBlockPage {
+    title
+    blocks {
+      __typename
+      ... on PageBlockPageBlocksHero {
+        headline
+        description
+        actions {
+          __typename
+          label
+          url
+          variant
+        }
+      }
+      ... on PageBlockPageBlocksFeatures {
+        title
+        imageList
+        hidden
+        booleanLabels
+        boolean
+        checkbox
+        checkboxInline
+        categoriesOther
+        radioGroup
+        radioGroupInline
+        buttonToggle
+        buttonToggleIcon
+        buttonToggleVertical
+        select
+        items
+      }
+      ... on PageBlockPageBlocksCta {
+        title
+        description
+        actions {
+          __typename
+          label
+          url
+          variant
+        }
+      }
+    }
+  }
+}
+
+fragment PostParts on Post {
+  title
+  author {
+    ... on Author {
+      name
+      bio
+      hobbies
+      image
+    }
+    ... on Document {
+      id
+    }
+  }
+  categories
+  body
+  image
+}
+
+fragment SsgPostParts on SsgPost {
+  title
+  body
+}
+
+fragment AuthorParts on Author {
+  name
+  bio
+  hobbies
+  image
+}
+
+fragment DocumentationParts on Documentation {
+  title
+  tags {
+    __typename
+    reference {
+      ... on Tag {
+        title
+        description
+        testing
+      }
+      ... on Document {
+        id
+      }
+    }
+  }
+  body
+}
+
+fragment TagParts on Tag {
+  title
+  description
+  testing
+}
